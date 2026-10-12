@@ -174,7 +174,9 @@ function openRegularize(code, day) {
   form.elements.date.value = day;
   form.elements.new_date.value = day;
   form.elements.new_date.max = todayIST();
-  form.elements.status.value = record.status;
+  // The UI intentionally offers only punchable statuses. Old seeded ABSENT/LEAVE
+  // records can still be corrected by moving them to a punchable status and adding a punch-in.
+  form.elements.status.value = PRESENCE.has(record.status) ? record.status : 'PRESENT';
   form.elements.punch_in.value = inputDateTime(record.punch_in);
   form.elements.punch_out.value = inputDateTime(record.punch_out);
   form.elements.clear_punch_out.checked = false;

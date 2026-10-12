@@ -1,4 +1,6 @@
 .env*
+sample_data/
+sample_seed.py
 .venv/
 venv/
 __pycache__/
