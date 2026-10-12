@@ -1,71 +1,885 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#12334a">
-  <meta name="description" content="PeopleLedger employee attendance and workforce analytics workspace">
-  <title>PeopleLedger | Attendance &amp; analytics</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=20261012-3">
-</head>
-<body>
-  <section id="login-screen" class="auth-screen" hidden><form id="login-form" class="auth-card"><span class="brand-mark">P</span><div class="section-kicker">PEOPLELEDGER WORKSPACE</div><h1>Welcome back.</h1><p>Sign in to continue to your workspace.</p><label>Email address<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-primary" type="submit">Sign in <span>→</span></button><p id="login-error" class="auth-error" role="alert"></p><details class="access-help"><summary>Need an account?</summary><p><b>Employee:</b> Ask your administrator to add you. They will use your employee email and give you a temporary password. There is no public employee sign-up.</p><p><b>First administrator:</b> In the project folder, run <code>python bootstrap_admin.py</code>. Enter the admin email and password when prompted, then use that email here. To view existing admin email addresses, run the same command again.</p></details></form></section>
-  <div class="app-shell" id="admin-app" hidden>
-    <aside class="sidebar">
-      <a class="brand" href="#overview"><span class="brand-mark">P</span><span>PeopleLedger</span></a>
-      <div class="workspace-label">WORKSPACE</div>
-      <div class="workspace-switch"><span class="workspace-icon">P</span><span><b>PeopleLedger</b><small>Attendance &amp; analytics</small></span><span class="chevron">⌄</span></div>
-      <div class="nav-label">WORKSPACE</div>
-      <nav class="nav-list" aria-label="Main navigation">
-        <a class="nav-item active" href="#overview" data-page="overview"><span class="nav-icon">◫</span>Overview</a>
-        <a class="nav-item" href="#employees" data-page="employees"><span class="nav-icon">♙</span>Employees<span class="nav-count" id="employee-nav-count">—</span></a>
-        <a class="nav-item" href="#attendance" data-page="attendance"><span class="nav-icon">◷</span>Attendance</a>
-        <a class="nav-item" href="#analytics" data-page="analytics"><span class="nav-icon">↗</span>Analytics</a>
-      </nav>
-      <div class="sidebar-bottom"><div class="help-card"><span class="help-spark">✳</span><b>Need a hand?</b><p>Keep your team’s attendance in sync.</p><a href="/docs" target="_blank">Explore API docs <span>↗</span></a></div><div class="profile"><span class="avatar avatar-purple" id="profile-initials">AD</span><span><b id="profile-name">Administrator</b><small>Workspace admin</small></span><button aria-label="Sign out" class="more-button" id="logout-button">↪</button></div></div>
-    </aside>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#12334a" />
+    <meta
+      name="description"
+      content="PeopleLedger employee attendance and workforce analytics workspace"
+    />
+    <title>PeopleLedger | Attendance &amp; analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=20261012-3" />
+  </head>
+  <body>
+    <section id="login-screen" class="auth-screen" hidden>
+      <form id="login-form" class="auth-card">
+        <span class="brand-mark">P</span>
+        <div class="section-kicker">PEOPLELEDGER WORKSPACE</div>
+        <h1>Welcome back.</h1>
+        <p>Sign in to continue to your workspace.</p>
+        <label
+          >Email address<input
+            name="email"
+            type="email"
+            autocomplete="username"
+            required /></label
+        ><label
+          >Password<input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required /></label
+        ><button class="button button-primary" type="submit">
+          Sign in <span>→</span>
+        </button>
+        <p id="login-error" class="auth-error" role="alert"></p>
+        <details class="access-help">
+          <summary>Need an account?</summary>
+          <p>
+            <b>Employee:</b> Ask your administrator to add you. They will use
+            your employee email and give you a temporary password. There is no
+            public employee sign-up.
+          </p>
+          <p>
+            <b>First administrator:</b> In the project folder, run
+            <code>python bootstrap_admin.py</code>. Enter the admin email and
+            password when prompted, then use that email here. To view existing
+            admin email addresses, run the same command again.
+          </p>
+        </details>
+      </form>
+    </section>
+    <div class="app-shell" id="admin-app" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="#overview"
+          ><span class="brand-mark">P</span><span>PeopleLedger</span></a
+        >
+        <div class="workspace-label">WORKSPACE</div>
+        <div class="workspace-switch">
+          <span class="workspace-icon">P</span
+          ><span
+            ><b>PeopleLedger</b><small>Attendance &amp; analytics</small></span
+          ><span class="chevron">⌄</span>
+        </div>
+        <div class="nav-label">WORKSPACE</div>
+        <nav class="nav-list" aria-label="Main navigation">
+          <a class="nav-item active" href="#overview" data-page="overview"
+            ><span class="nav-icon">◫</span>Overview</a
+          >
+          <a class="nav-item" href="#employees" data-page="employees"
+            ><span class="nav-icon">♙</span>Employees<span
+              class="nav-count"
+              id="employee-nav-count"
+              >—</span
+            ></a
+          >
+          <a class="nav-item" href="#attendance" data-page="attendance"
+            ><span class="nav-icon">◷</span>Attendance</a
+          >
+          <a class="nav-item" href="#analytics" data-page="analytics"
+            ><span class="nav-icon">↗</span>Analytics</a
+          >
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="help-card">
+            <span class="help-spark">✳</span><b>Need a hand?</b>
+            <p>Keep your team’s attendance in sync.</p>
+            <a href="/docs" target="_blank">Explore API docs <span>↗</span></a>
+          </div>
+          <div class="profile">
+            <span class="avatar avatar-purple" id="profile-initials">AD</span
+            ><span
+              ><b id="profile-name">Administrator</b
+              ><small>Workspace admin</small></span
+            ><button
+              aria-label="Sign out"
+              class="more-button"
+              id="logout-button"
+            >
+              ↪
+            </button>
+          </div>
+        </div>
+      </aside>
 
-    <main class="main-content">
-      <header class="topbar"><div class="breadcrumbs"><span>People</span><span class="slash">/</span><b id="breadcrumb-current">Overview</b></div><div class="top-actions"><span class="connection-pill" id="connection-state"><i></i> Connecting</span><span class="avatar avatar-orange" id="top-initials">AD</span></div></header>
-      <section class="page-view active" id="page-overview">
-        <div class="page-heading"><div><div class="eyebrow" id="today-label">PEOPLE OPERATIONS</div><h1>Your team at a glance<span class="heading-period">.</span></h1><p>A clear picture of your people and their attendance.</p></div><div class="heading-actions"><button class="button button-secondary" id="refresh-button"><span>↻</span> Refresh</button><button class="button button-primary" data-open-modal="employee-modal"><span>＋</span> Add employee</button></div></div>
-        <div class="metric-grid">
-          <article class="metric-card"><div class="metric-top"><span>Total employees</span><span class="metric-icon icon-lilac">♙</span></div><div class="metric-value" id="metric-employees">—</div><div class="metric-caption"><span class="quiet-tag">Across all departments</span></div><div class="metric-decoration decor-one"></div></article>
-          <article class="metric-card"><div class="metric-top"><span>Present today</span><span class="metric-icon icon-mint">✓</span></div><div class="metric-value" id="metric-present">—</div><div class="metric-caption"><span class="status-dot green"></span><span id="present-caption">Attendance records today</span></div><div class="metric-decoration decor-two"></div></article>
-          <article class="metric-card"><div class="metric-top"><span>Late arrivals</span><span class="metric-icon icon-peach">◷</span></div><div class="metric-value" id="metric-late">—</div><div class="metric-caption"><span class="status-dot orange"></span><span>Recorded late today</span></div><div class="metric-decoration decor-three"></div></article>
-          <article class="metric-card"><div class="metric-top"><span>Departments</span><span class="metric-icon icon-blue">⌘</span></div><div class="metric-value" id="metric-departments">—</div><div class="metric-caption"><span class="quiet-tag">In your workspace</span></div><div class="metric-decoration decor-four"></div></article>
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumbs">
+            <span>People</span><span class="slash">/</span
+            ><b id="breadcrumb-current">Overview</b>
+          </div>
+          <div class="top-actions">
+            <span class="connection-pill" id="connection-state"
+              ><i></i> Connecting</span
+            ><span class="avatar avatar-orange" id="top-initials">AD</span>
+          </div>
+        </header>
+        <section class="page-view active" id="page-overview">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow" id="today-label">PEOPLE OPERATIONS</div>
+              <h1>
+                Your team at a glance<span class="heading-period">.</span>
+              </h1>
+              <p>A clear picture of your people and their attendance.</p>
+            </div>
+            <div class="heading-actions">
+              <button class="button button-secondary" id="refresh-button">
+                <span>↻</span> Refresh</button
+              ><button
+                class="button button-primary"
+                data-open-modal="employee-modal"
+              >
+                <span>＋</span> Add employee
+              </button>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <article class="metric-card">
+              <div class="metric-top">
+                <span>Total employees</span
+                ><span class="metric-icon icon-lilac">♙</span>
+              </div>
+              <div class="metric-value" id="metric-employees">—</div>
+              <div class="metric-caption">
+                <span class="quiet-tag">Across all departments</span>
+              </div>
+              <div class="metric-decoration decor-one"></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span>Present today</span
+                ><span class="metric-icon icon-mint">✓</span>
+              </div>
+              <div class="metric-value" id="metric-present">—</div>
+              <div class="metric-caption">
+                <span class="status-dot green"></span
+                ><span id="present-caption">Attendance records today</span>
+              </div>
+              <div class="metric-decoration decor-two"></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span>Late arrivals</span
+                ><span class="metric-icon icon-peach">◷</span>
+              </div>
+              <div class="metric-value" id="metric-late">—</div>
+              <div class="metric-caption">
+                <span class="status-dot orange"></span
+                ><span>Recorded late today</span>
+              </div>
+              <div class="metric-decoration decor-three"></div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-top">
+                <span>Departments</span
+                ><span class="metric-icon icon-blue">⌘</span>
+              </div>
+              <div class="metric-value" id="metric-departments">—</div>
+              <div class="metric-caption">
+                <span class="quiet-tag">In your workspace</span>
+              </div>
+              <div class="metric-decoration decor-four"></div>
+            </article>
+          </div>
+          <div class="content-grid">
+            <section class="panel attendance-panel">
+              <div class="panel-heading">
+                <div>
+                  <div class="section-kicker">LIVE PULSE</div>
+                  <h2>Today’s attendance</h2>
+                </div>
+                <a
+                  href="#attendance"
+                  class="text-link"
+                  data-page-link="attendance"
+                  >View attendance <span>→</span></a
+                >
+              </div>
+              <div class="attendance-overview">
+                <div class="donut-wrap">
+                  <div class="donut" id="attendance-donut">
+                    <div class="donut-center">
+                      <b id="attendance-rate">—</b><small>present</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="attendance-legend">
+                  <div>
+                    <span class="legend-dot legend-present"></span
+                    ><span>Present</span><b id="legend-present">—</b>
+                  </div>
+                  <div>
+                    <span class="legend-dot legend-late"></span><span>Late</span
+                    ><b id="legend-late">—</b>
+                  </div>
+                  <div>
+                    <span class="legend-dot legend-absent"></span
+                    ><span>No record</span><b id="legend-unrecorded">—</b>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footnote">
+                <span class="status-dot green"></span> Based on today’s
+                attendance records
+              </div>
+            </section>
+            <section class="panel quick-panel">
+              <div class="panel-heading">
+                <div>
+                  <div class="section-kicker">QUICK ACTIONS</div>
+                  <h2>Make a move</h2>
+                </div>
+                <span class="sparkle">✳</span>
+              </div>
+              <button class="quick-action" data-open-modal="punch-in-modal">
+                <span class="quick-icon quick-green">↘</span
+                ><span
+                  ><b>Record a punch-in</b
+                  ><small>Start an employee’s day</small></span
+                ><span class="quick-arrow">→</span></button
+              ><button class="quick-action" data-open-modal="punch-out-modal">
+                <span class="quick-icon quick-blue">↗</span
+                ><span
+                  ><b>Record a punch-out</b
+                  ><small>Close an open attendance record</small></span
+                ><span class="quick-arrow">→</span></button
+              ><button class="quick-action" data-page-link="analytics">
+                <span class="quick-icon quick-violet">⌁</span
+                ><span
+                  ><b>Explore team analytics</b
+                  ><small>Find patterns in your data</small></span
+                ><span class="quick-arrow">→</span>
+              </button>
+            </section>
+          </div>
+          <section class="panel recent-panel">
+            <div class="panel-heading">
+              <div>
+                <div class="section-kicker">THE LATEST</div>
+                <h2>Recent attendance</h2>
+              </div>
+              <a
+                href="#attendance"
+                class="text-link"
+                data-page-link="attendance"
+                >All records <span>→</span></a
+              >
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>DATE</th>
+                    <th>STATUS</th>
+                    <th>PUNCH IN</th>
+                    <th>HOURS</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-table">
+                  <tr>
+                    <td colspan="5" class="empty-state">Loading attendance…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="page-view" id="page-employees">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">YOUR PEOPLE</div>
+              <h1>Employees<span class="heading-period">.</span></h1>
+              <p>Manage employee details and their shift schedules.</p>
+            </div>
+            <button
+              class="button button-primary"
+              data-open-modal="employee-modal"
+            >
+              <span>＋</span> Add employee
+            </button>
+          </div>
+          <section class="panel list-panel">
+            <div class="list-toolbar">
+              <div class="search-box">
+                <span>⌕</span
+                ><input
+                  id="employee-search"
+                  type="search"
+                  placeholder="Search employees"
+                />
+              </div>
+              <select id="department-filter" aria-label="Filter by department">
+                <option value="">All departments</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>DEPARTMENT</th>
+                    <th>SHIFT</th>
+                    <th>JOINED</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="employees-table">
+                  <tr>
+                    <td colspan="5" class="empty-state">Loading employees…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer" id="employee-footer"></div>
+          </section>
+        </section>
+
+        <section class="page-view" id="page-attendance">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">DAILY TRACKING</div>
+              <h1>Attendance<span class="heading-period">.</span></h1>
+              <p>Keep track of every punch, day by day.</p>
+            </div>
+            <div class="heading-actions">
+              <button
+                class="button button-secondary"
+                data-open-modal="punch-in-modal"
+              >
+                ↘ Punch-in</button
+              ><button
+                class="button button-primary"
+                data-open-modal="punch-out-modal"
+              >
+                ↗ Punch-out
+              </button>
+            </div>
+          </div>
+          <section class="panel list-panel">
+            <div class="list-toolbar">
+              <div class="search-box">
+                <span>⌕</span
+                ><input
+                  id="attendance-search"
+                  type="search"
+                  placeholder="Search by employee code"
+                />
+              </div>
+              <div class="filter-group">
+                <input
+                  id="attendance-date"
+                  type="date"
+                  aria-label="Filter by date"
+                /><select id="attendance-status">
+                  <option value="">All statuses</option>
+                  <option>PRESENT</option>
+                  <option>WFH</option>
+                  <option>ON_DUTY</option>
+                  <option>ABSENT</option>
+                  <option>LEAVE</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>DATE</th>
+                    <th>STATUS</th>
+                    <th>PUNCH IN</th>
+                    <th>PUNCH OUT</th>
+                    <th>HOURS</th>
+                    <th>LATE</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-table">
+                  <tr>
+                    <td colspan="8" class="empty-state">Loading attendance…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer" id="attendance-footer"></div>
+          </section>
+        </section>
+
+        <section class="page-view" id="page-analytics">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">THE BIG PICTURE</div>
+              <h1>Team analytics<span class="heading-period">.</span></h1>
+              <p>Understand attendance patterns across your organization.</p>
+            </div>
+          </div>
+          <section class="panel analytics-controls">
+            <div>
+              <label for="analytics-month">Choose a month</label
+              ><input type="month" id="analytics-month" />
+            </div>
+            <div>
+              <label for="analytics-department">Department</label
+              ><select id="analytics-department">
+                <option value="">All departments</option>
+              </select>
+            </div>
+            <button class="button button-primary" id="load-analytics">
+              Run report <span>→</span>
+            </button>
+          </section>
+          <div id="analytics-results" class="analytics-results">
+            <section class="panel analytics-placeholder">
+              <span class="placeholder-icon">⌁</span>
+              <h2>Your team has a story to tell.</h2>
+              <p>
+                Choose a month and run a report to explore attendance by
+                department.
+              </p>
+            </section>
+          </div>
+        </section>
+        <footer class="app-footer">
+          <span>Clear records. Better workforce decisions.</span
+          ><span>PeopleLedger <b>•</b> API v2</span>
+        </footer>
+      </main>
+    </div>
+
+    <main id="employee-app" class="employee-app" hidden>
+      <header class="employee-header">
+        <a class="brand" href="#"
+          ><span class="brand-mark">P</span><span>PeopleLedger</span></a
+        ><button class="button button-secondary" id="employee-logout">
+          Sign out
+        </button>
+      </header>
+      <section class="employee-welcome">
+        <div>
+          <div class="eyebrow">MY ATTENDANCE</div>
+          <h1>Hello, <span id="employee-name">there</span>.</h1>
+          <p id="employee-department"></p>
         </div>
-        <div class="content-grid">
-          <section class="panel attendance-panel"><div class="panel-heading"><div><div class="section-kicker">LIVE PULSE</div><h2>Today’s attendance</h2></div><a href="#attendance" class="text-link" data-page-link="attendance">View attendance <span>→</span></a></div><div class="attendance-overview"><div class="donut-wrap"><div class="donut" id="attendance-donut"><div class="donut-center"><b id="attendance-rate">—</b><small>present</small></div></div></div><div class="attendance-legend"><div><span class="legend-dot legend-present"></span><span>Present</span><b id="legend-present">—</b></div><div><span class="legend-dot legend-late"></span><span>Late</span><b id="legend-late">—</b></div><div><span class="legend-dot legend-absent"></span><span>No record</span><b id="legend-unrecorded">—</b></div></div></div><div class="panel-footnote"><span class="status-dot green"></span> Based on today’s attendance records</div></section>
-          <section class="panel quick-panel"><div class="panel-heading"><div><div class="section-kicker">QUICK ACTIONS</div><h2>Make a move</h2></div><span class="sparkle">✳</span></div><button class="quick-action" data-open-modal="punch-in-modal"><span class="quick-icon quick-green">↘</span><span><b>Record a punch-in</b><small>Start an employee’s day</small></span><span class="quick-arrow">→</span></button><button class="quick-action" data-open-modal="punch-out-modal"><span class="quick-icon quick-blue">↗</span><span><b>Record a punch-out</b><small>Close an open attendance record</small></span><span class="quick-arrow">→</span></button><button class="quick-action" data-page-link="analytics"><span class="quick-icon quick-violet">⌁</span><span><b>Explore team analytics</b><small>Find patterns in your data</small></span><span class="quick-arrow">→</span></button></section>
+        <div class="employee-actions">
+          <button class="button button-secondary" id="my-punch-in">
+            ↘ Punch in</button
+          ><button class="button button-primary" id="my-punch-out">
+            ↗ Punch out
+          </button>
         </div>
-        <section class="panel recent-panel"><div class="panel-heading"><div><div class="section-kicker">THE LATEST</div><h2>Recent attendance</h2></div><a href="#attendance" class="text-link" data-page-link="attendance">All records <span>→</span></a></div><div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DATE</th><th>STATUS</th><th>PUNCH IN</th><th>HOURS</th></tr></thead><tbody id="recent-table"><tr><td colspan="5" class="empty-state">Loading attendance…</td></tr></tbody></table></div></section>
       </section>
-
-      <section class="page-view" id="page-employees"><div class="page-heading"><div><div class="eyebrow">YOUR PEOPLE</div><h1>Employees<span class="heading-period">.</span></h1><p>Manage employee details and their shift schedules.</p></div><button class="button button-primary" data-open-modal="employee-modal"><span>＋</span> Add employee</button></div><section class="panel list-panel"><div class="list-toolbar"><div class="search-box"><span>⌕</span><input id="employee-search" type="search" placeholder="Search employees"></div><select id="department-filter" aria-label="Filter by department"><option value="">All departments</option></select></div><div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DEPARTMENT</th><th>SHIFT</th><th>JOINED</th><th></th></tr></thead><tbody id="employees-table"><tr><td colspan="5" class="empty-state">Loading employees…</td></tr></tbody></table></div><div class="table-footer" id="employee-footer"></div></section></section>
-
-      <section class="page-view" id="page-attendance"><div class="page-heading"><div><div class="eyebrow">DAILY TRACKING</div><h1>Attendance<span class="heading-period">.</span></h1><p>Keep track of every punch, day by day.</p></div><div class="heading-actions"><button class="button button-secondary" data-open-modal="punch-in-modal">↘ Punch-in</button><button class="button button-primary" data-open-modal="punch-out-modal">↗ Punch-out</button></div></div><section class="panel list-panel"><div class="list-toolbar"><div class="search-box"><span>⌕</span><input id="attendance-search" type="search" placeholder="Search by employee code"></div><div class="filter-group"><input id="attendance-date" type="date" aria-label="Filter by date"><select id="attendance-status"><option value="">All statuses</option><option>PRESENT</option><option>WFH</option><option>ON_DUTY</option><option>ABSENT</option><option>LEAVE</option></select></div></div><div class="table-wrap"><table><thead><tr><th>EMPLOYEE</th><th>DATE</th><th>STATUS</th><th>PUNCH IN</th><th>PUNCH OUT</th><th>HOURS</th><th>LATE</th><th></th></tr></thead><tbody id="attendance-table"><tr><td colspan="8" class="empty-state">Loading attendance…</td></tr></tbody></table></div><div class="table-footer" id="attendance-footer"></div></section></section>
-
-      <section class="page-view" id="page-analytics"><div class="page-heading"><div><div class="eyebrow">THE BIG PICTURE</div><h1>Team analytics<span class="heading-period">.</span></h1><p>Understand attendance patterns across your organization.</p></div></div><section class="panel analytics-controls"><div><label for="analytics-month">Choose a month</label><input type="month" id="analytics-month"></div><div><label for="analytics-department">Department</label><select id="analytics-department"><option value="">All departments</option></select></div><button class="button button-primary" id="load-analytics">Run report <span>→</span></button></section><div id="analytics-results" class="analytics-results"><section class="panel analytics-placeholder"><span class="placeholder-icon">⌁</span><h2>Your team has a story to tell.</h2><p>Choose a month and run a report to explore attendance by department.</p></section></div></section>
-      <footer class="app-footer"><span>Clear records. Better workforce decisions.</span><span>PeopleLedger <b>•</b> API v2</span></footer>
+      <div class="metric-grid employee-metrics">
+        <article class="metric-card">
+          <div class="metric-top">
+            <span>Present days this month</span
+            ><span class="metric-icon icon-mint">✓</span>
+          </div>
+          <div class="metric-value" id="my-present-days">—</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top">
+            <span>Attendance</span><span class="metric-icon icon-lilac">◷</span>
+          </div>
+          <div class="metric-value" id="my-attendance-pct">—</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top">
+            <span>Late arrivals</span
+            ><span class="metric-icon icon-peach">!</span>
+          </div>
+          <div class="metric-value" id="my-late-count">—</div>
+        </article>
+        <article class="metric-card">
+          <div class="metric-top">
+            <span>Overtime</span><span class="metric-icon icon-blue">＋</span>
+          </div>
+          <div class="metric-value" id="my-overtime">—</div>
+        </article>
+      </div>
+      <section class="panel list-panel">
+        <div class="panel-heading">
+          <div>
+            <div class="section-kicker">PERSONAL RECORD</div>
+            <h2>Attendance history</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>STATUS</th>
+                <th>PUNCH IN</th>
+                <th>PUNCH OUT</th>
+                <th>HOURS</th>
+              </tr>
+            </thead>
+            <tbody id="my-history">
+              <tr>
+                <td colspan="5" class="empty-state">Loading your records…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
-  </div>
 
-  <main id="employee-app" class="employee-app" hidden><header class="employee-header"><a class="brand" href="#"><span class="brand-mark">P</span><span>PeopleLedger</span></a><button class="button button-secondary" id="employee-logout">Sign out</button></header><section class="employee-welcome"><div><div class="eyebrow">MY ATTENDANCE</div><h1>Hello, <span id="employee-name">there</span>.</h1><p id="employee-department"></p></div><div class="employee-actions"><button class="button button-secondary" id="my-punch-in">↘ Punch in</button><button class="button button-primary" id="my-punch-out">↗ Punch out</button></div></section><div class="metric-grid employee-metrics"><article class="metric-card"><div class="metric-top"><span>Present days this month</span><span class="metric-icon icon-mint">✓</span></div><div class="metric-value" id="my-present-days">—</div></article><article class="metric-card"><div class="metric-top"><span>Attendance</span><span class="metric-icon icon-lilac">◷</span></div><div class="metric-value" id="my-attendance-pct">—</div></article><article class="metric-card"><div class="metric-top"><span>Late arrivals</span><span class="metric-icon icon-peach">!</span></div><div class="metric-value" id="my-late-count">—</div></article><article class="metric-card"><div class="metric-top"><span>Overtime</span><span class="metric-icon icon-blue">＋</span></div><div class="metric-value" id="my-overtime">—</div></article></div><section class="panel list-panel"><div class="panel-heading"><div><div class="section-kicker">PERSONAL RECORD</div><h2>Attendance history</h2></div></div><div class="table-wrap"><table><thead><tr><th>DATE</th><th>STATUS</th><th>PUNCH IN</th><th>PUNCH OUT</th><th>HOURS</th></tr></thead><tbody id="my-history"><tr><td colspan="5" class="empty-state">Loading your records…</td></tr></tbody></table></div></section></main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog class="modal" id="employee-modal">
+      <form id="employee-form" class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <span class="section-kicker">NEW TEAMMATE</span>
+            <h2>Add an employee</h2>
+          </div>
+          <button
+            type="button"
+            class="close-modal"
+            data-close-modal
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="form-grid">
+          <label
+            >Employee code<input
+              name="emp_code"
+              placeholder="EMP0001"
+              pattern="EMP[0-9]{4,6}"
+              required /></label
+          ><label
+            >Full name<input
+              name="name"
+              placeholder="Asha Rao"
+              maxlength="100"
+              required /></label
+          ><label
+            >Email address<input
+              name="email"
+              type="email"
+              placeholder="asha@company.com"
+              required /></label
+          ><label
+            >Department<input
+              name="department"
+              placeholder="Engineering"
+              maxlength="50"
+              required /></label
+          ><label
+            >Shift starts<input
+              name="shift_start"
+              type="time"
+              value="09:30"
+              required /></label
+          ><label
+            >Shift ends<input
+              name="shift_end"
+              type="time"
+              value="18:30"
+              required /></label
+          ><label class="full-width"
+            >Joining date<input name="joined_on" type="date" required /></label
+          ><label class="full-width"
+            >Temporary sign-in password<input
+              name="account_password"
+              type="password"
+              minlength="12"
+              autocomplete="new-password"
+              required
+            /><small
+              >At least 12 characters. Share it with the employee
+              securely.</small
+            ></label
+          >
+        </div>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            data-close-modal
+          >
+            Cancel</button
+          ><button class="button button-primary" type="submit">
+            Add employee <span>→</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
 
-  <dialog class="modal" id="employee-modal"><form id="employee-form" class="modal-card"><div class="modal-heading"><div><span class="section-kicker">NEW TEAMMATE</span><h2>Add an employee</h2></div><button type="button" class="close-modal" data-close-modal aria-label="Close">×</button></div><div class="form-grid"><label>Employee code<input name="emp_code" placeholder="EMP0001" pattern="EMP[0-9]{4,6}" required></label><label>Full name<input name="name" placeholder="Asha Rao" maxlength="100" required></label><label>Email address<input name="email" type="email" placeholder="asha@company.com" required></label><label>Department<input name="department" placeholder="Engineering" maxlength="50" required></label><label>Shift starts<input name="shift_start" type="time" value="09:30" required></label><label>Shift ends<input name="shift_end" type="time" value="18:30" required></label><label class="full-width">Joining date<input name="joined_on" type="date" required></label><label class="full-width">Temporary sign-in password<input name="account_password" type="password" minlength="12" autocomplete="new-password" required><small>At least 12 characters. Share it with the employee securely.</small></label></div><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Add employee <span>→</span></button></div></form></dialog>
+    <dialog class="modal delete-modal" id="delete-employee-modal">
+      <form id="delete-employee-form" class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <span class="section-kicker danger-kicker">PERMANENT ACTION</span>
+            <h2>Delete employee</h2>
+          </div>
+          <button
+            type="button"
+            class="close-modal"
+            data-close-modal
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <p>
+          You’re about to permanently delete
+          <b id="delete-employee-name"></b> (<code
+            id="delete-employee-code"
+          ></code
+          >).
+        </p>
+        <p class="delete-warning">
+          This also deletes the employee’s attendance history, sign-in account,
+          and active sessions. This cannot be undone.
+        </p>
+        <label class="delete-confirm-label"
+          >Type <code id="delete-employee-code-hint"></code> to confirm<input
+            id="delete-employee-confirmation"
+            name="confirmation"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Employee code"
+            required
+        /></label>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            data-close-modal
+          >
+            Cancel</button
+          ><button
+            class="button button-danger"
+            id="confirm-employee-delete"
+            type="submit"
+            disabled
+          >
+            Delete employee
+          </button>
+        </div>
+      </form>
+    </dialog>
 
-  <dialog class="modal delete-modal" id="delete-employee-modal"><form id="delete-employee-form" class="modal-card"><div class="modal-heading"><div><span class="section-kicker danger-kicker">PERMANENT ACTION</span><h2>Delete employee</h2></div><button type="button" class="close-modal" data-close-modal aria-label="Close">×</button></div><p>You’re about to permanently delete <b id="delete-employee-name"></b> (<code id="delete-employee-code"></code>).</p><p class="delete-warning">This also deletes the employee’s attendance history, sign-in account, and active sessions. This cannot be undone.</p><label class="delete-confirm-label">Type <code id="delete-employee-code-hint"></code> to confirm<input id="delete-employee-confirmation" name="confirmation" autocomplete="off" spellcheck="false" placeholder="Employee code" required></label><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-danger" id="confirm-employee-delete" type="submit" disabled>Delete employee</button></div></form></dialog>
+    <dialog class="modal" id="punch-in-modal">
+      <form id="punch-in-form" class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <span class="section-kicker">START THE DAY</span>
+            <h2>Record attendance</h2>
+          </div>
+          <button
+            type="button"
+            class="close-modal"
+            data-close-modal
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="form-grid">
+          <label class="full-width"
+            >Employee<select name="emp_code" class="employee-select" required>
+              <option value="">Choose an employee</option>
+            </select></label
+          ><label
+            >Status<select name="status" required>
+              <option>PRESENT</option>
+              <option>WFH</option>
+              <option>ON_DUTY</option>
+              <option>ABSENT</option>
+              <option>LEAVE</option>
+            </select></label
+          >
+          <div class="datetime-control">
+            <span data-time-label>Punch-in time</span>
+            <div class="datetime-row">
+              <input
+                type="date"
+                data-date-input
+                aria-label="Attendance date"
+              /><input
+                type="time"
+                data-time-input
+                aria-label="Punch-in time"
+              /><button
+                type="button"
+                class="button button-secondary"
+                data-confirm-time
+              >
+                OK
+              </button>
+            </div>
+            <input type="hidden" name="punched_at" /><small data-time-status
+              >Leave blank to use the current time.</small
+            >
+          </div>
+        </div>
+        <p class="form-hint" data-punch-hint>
+          Choose both a date and time, then press OK to confirm.
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            data-close-modal
+          >
+            Cancel</button
+          ><button class="button button-primary" type="submit">
+            Save attendance <span>→</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
 
-  <dialog class="modal" id="punch-in-modal"><form id="punch-in-form" class="modal-card"><div class="modal-heading"><div><span class="section-kicker">START THE DAY</span><h2>Record attendance</h2></div><button type="button" class="close-modal" data-close-modal aria-label="Close">×</button></div><div class="form-grid"><label class="full-width">Employee<select name="emp_code" class="employee-select" required><option value="">Choose an employee</option></select></label><label>Status<select name="status" required><option>PRESENT</option><option>WFH</option><option>ON_DUTY</option><option>ABSENT</option><option>LEAVE</option></select></label><div class="datetime-control"><span data-time-label>Punch-in time</span><div class="datetime-row"><input type="date" data-date-input aria-label="Attendance date"><input type="time" data-time-input aria-label="Punch-in time"><button type="button" class="button button-secondary" data-confirm-time>OK</button></div><input type="hidden" name="punched_at"><small data-time-status>Leave blank to use the current time.</small></div></div><p class="form-hint" data-punch-hint>Choose both a date and time, then press OK to confirm.</p><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Save attendance <span>→</span></button></div></form></dialog>
-
-  <dialog class="modal" id="punch-out-modal"><form id="punch-out-form" class="modal-card"><div class="modal-heading"><div><span class="section-kicker">WRAP IT UP</span><h2>Record a punch-out</h2></div><button type="button" class="close-modal" data-close-modal aria-label="Close">×</button></div><div class="form-grid"><label class="full-width">Employee<select name="emp_code" class="employee-select" required><option value="">Choose an employee</option></select></label><div class="datetime-control full-width"><span>Punch-out time</span><div class="datetime-row"><input type="date" data-date-input aria-label="Punch-out date"><input type="time" data-time-input aria-label="Punch-out time"><button type="button" class="button button-secondary" data-confirm-time>OK</button></div><input type="hidden" name="punched_at"><small data-time-status>Leave blank to use the current time.</small></div></div><p class="form-hint">Choose both a date and time, then press OK to confirm.</p><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Record punch-out <span>→</span></button></div></form></dialog>
-  <dialog class="modal" id="regularize-modal"><form id="regularize-form" class="modal-card"><div class="modal-heading"><div><span class="section-kicker">AUDITABLE CORRECTION</span><h2>Correct attendance</h2></div><button type="button" class="close-modal" data-close-modal aria-label="Close">×</button></div><input type="hidden" name="emp_code"><input type="hidden" name="date"><div class="form-grid"><label>Attendance date<input name="new_date" type="date" required></label><label>Status<select name="status" required><option>PRESENT</option><option>WFH</option><option>ON_DUTY</option><option>ABSENT</option><option>LEAVE</option></select></label><label>Punch-in<input name="punch_in" type="datetime-local"></label><label>Punch-out<input name="punch_out" type="datetime-local"></label><label class="full-width checkbox-label"><input name="clear_punch_out" type="checkbox"> Reopen attendance and clear the saved punch-out</label><label class="full-width">Reason for correction<input name="reason" minlength="5" maxlength="200" placeholder="Explain the correction" required></label><label class="full-width">Regularized by<input name="regularized_by" maxlength="50" readonly required></label></div><p class="form-hint">Choose ABSENT or LEAVE to clear punch times. To move a record to another day, update Attendance date and Punch-in. Check “Reopen attendance” to remove the saved punch-out. Future dates are not allowed.</p><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Save correction <span>→</span></button></div></form></dialog>
-  <script src="/static/app.js?v=20261012-3" defer></script>
-</body>
+    <dialog class="modal" id="punch-out-modal">
+      <form id="punch-out-form" class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <span class="section-kicker">WRAP IT UP</span>
+            <h2>Record a punch-out</h2>
+          </div>
+          <button
+            type="button"
+            class="close-modal"
+            data-close-modal
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="form-grid">
+          <label class="full-width"
+            >Employee<select name="emp_code" class="employee-select" required>
+              <option value="">Choose an employee</option>
+            </select></label
+          >
+          <div class="datetime-control full-width">
+            <span>Punch-out time</span>
+            <div class="datetime-row">
+              <input
+                type="date"
+                data-date-input
+                aria-label="Punch-out date"
+              /><input
+                type="time"
+                data-time-input
+                aria-label="Punch-out time"
+              /><button
+                type="button"
+                class="button button-secondary"
+                data-confirm-time
+              >
+                OK
+              </button>
+            </div>
+            <input type="hidden" name="punched_at" /><small data-time-status
+              >Leave blank to use the current time.</small
+            >
+          </div>
+        </div>
+        <p class="form-hint">
+          Choose both a date and time, then press OK to confirm.
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            data-close-modal
+          >
+            Cancel</button
+          ><button class="button button-primary" type="submit">
+            Record punch-out <span>→</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog class="modal" id="regularize-modal">
+      <form id="regularize-form" class="modal-card">
+        <div class="modal-heading">
+          <div>
+            <span class="section-kicker">AUDITABLE CORRECTION</span>
+            <h2>Correct attendance</h2>
+          </div>
+          <button
+            type="button"
+            class="close-modal"
+            data-close-modal
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <input type="hidden" name="emp_code" /><input
+          type="hidden"
+          name="date"
+        />
+        <div class="form-grid">
+          <label
+            >Attendance date<input
+              name="new_date"
+              type="date"
+              required /></label
+          ><label
+            >Status<select name="status" required>
+              <option>PRESENT</option>
+              <option>WFH</option>
+              <option>ON_DUTY</option>
+              <option>ABSENT</option>
+              <option>LEAVE</option>
+            </select></label
+          ><label>Punch-in<input name="punch_in" type="datetime-local" /></label
+          ><label
+            >Punch-out<input name="punch_out" type="datetime-local" /></label
+          ><label class="full-width checkbox-label"
+            ><input name="clear_punch_out" type="checkbox" /> Reopen attendance
+            and clear the saved punch-out</label
+          ><label class="full-width"
+            >Reason for correction<input
+              name="reason"
+              minlength="5"
+              maxlength="200"
+              placeholder="Explain the correction"
+              required /></label
+          ><label class="full-width"
+            >Regularized by<input
+              name="regularized_by"
+              maxlength="50"
+              readonly
+              required
+          /></label>
+        </div>
+        <p class="form-hint">
+          Choose ABSENT or LEAVE to clear punch times. To move a record to
+          another day, update Attendance date and Punch-in. Check “Reopen
+          attendance” to remove the saved punch-out. Future dates are not
+          allowed.
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="button button-secondary"
+            data-close-modal
+          >
+            Cancel</button
+          ><button class="button button-primary" type="submit">
+            Save correction <span>→</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <script src="/static/app.js?v=20261012-3" defer></script>
+  </body>
 </html>
