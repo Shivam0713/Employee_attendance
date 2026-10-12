@@ -164,7 +164,27 @@ function openModal(id) {
     modal.querySelector('[data-time-input]').value = '';
     modal.querySelector('[data-time-status]').textContent = 'Leave blank to use the current time.';
   }
+  if (id === 'punch-in-modal') syncPunchInMode();
   modal.showModal();
+}
+function syncPunchInMode() {
+  const form = $('#punch-in-form');
+  if (!form) return;
+  const nonWorking = ['ABSENT', 'LEAVE'].includes(form.elements.status.value);
+  const control = form.querySelector('.datetime-control');
+  const timeInput = form.querySelector('[data-time-input]');
+  const confirmButton = form.querySelector('[data-confirm-time]');
+  control.classList.toggle('is-non-working', nonWorking);
+  timeInput.hidden = nonWorking;
+  confirmButton.hidden = nonWorking;
+  form.querySelector('[data-time-label]').textContent = nonWorking ? 'Attendance date' : 'Punch-in time';
+  form.querySelector('[data-punch-hint]').textContent = nonWorking
+    ? 'Absence and leave records do not have punch times.'
+    : 'Choose both a date and time, then press OK to confirm.';
+  form.querySelector('[data-time-status]').textContent = nonWorking
+    ? 'No punch times will be recorded.'
+    : 'Leave blank to use the current time.';
+  if (nonWorking) form.elements.punched_at.value = '';
 }
 function openRegularize(code, day) {
   const record = state.attendance.find(item => item.emp_code === code && item.date === day);
@@ -174,9 +194,7 @@ function openRegularize(code, day) {
   form.elements.date.value = day;
   form.elements.new_date.value = day;
   form.elements.new_date.max = todayIST();
-  // The UI intentionally offers only punchable statuses. Old seeded ABSENT/LEAVE
-  // records can still be corrected by moving them to a punchable status and adding a punch-in.
-  form.elements.status.value = PRESENCE.has(record.status) ? record.status : 'PRESENT';
+  form.elements.status.value = record.status;
   form.elements.punch_in.value = inputDateTime(record.punch_in);
   form.elements.punch_out.value = inputDateTime(record.punch_out);
   form.elements.clear_punch_out.checked = false;
@@ -280,18 +298,23 @@ async function submitPunch(event, direction) {
   event.preventDefault();
   const form = event.currentTarget;
   const body = formObject(form);
-  if ((form.querySelector('[data-date-input]').value || form.querySelector('[data-time-input]').value) && !body.punched_at) {
+  const nonWorking = direction === 'in' && ['ABSENT', 'LEAVE'].includes(body.status);
+  if (nonWorking) {
+    body.date = form.querySelector('[data-date-input]').value || todayIST();
+    delete body.punched_at;
+  }
+  if (!nonWorking && (form.querySelector('[data-date-input]').value || form.querySelector('[data-time-input]').value) && !body.punched_at) {
     notify('Press OK to confirm the selected date and time first.', true);
     return;
   }
   if (body.punched_at) body.punched_at = msFromInput(body.punched_at);
   else delete body.punched_at;
-  const endpoint = direction === 'in' ? '/attendance/punch-in' : '/attendance/punch-out';
+  const endpoint = nonWorking ? '/attendance/non-working' : direction === 'in' ? '/attendance/punch-in' : '/attendance/punch-out';
   try {
     await request(endpoint, { method: 'POST', body: JSON.stringify(body) });
     form.closest('dialog').close(); form.reset();
     await loadAttendance();
-    notify(direction === 'in' ? 'Punch-in recorded.' : 'Punch-out recorded.');
+    notify(nonWorking ? `${humanStatus(body.status)} attendance recorded.` : direction === 'in' ? 'Punch-in recorded.' : 'Punch-out recorded.');
   } catch (error) { notify(error.message, true); }
 }
 async function submitRegularization(event) {
@@ -377,6 +400,7 @@ $('#delete-employee-confirmation').addEventListener('input', event => {
   $('#confirm-employee-delete').disabled = event.currentTarget.value !== $('#delete-employee-modal').dataset.empCode;
 });
 $('#punch-in-form').addEventListener('submit', event => submitPunch(event, 'in'));
+$('#punch-in-form').elements.status.addEventListener('change', syncPunchInMode);
 $('#punch-out-form').addEventListener('submit', event => submitPunch(event, 'out'));
 $('#regularize-form').addEventListener('submit', submitRegularization);
 $('#regularize-form').elements.clear_punch_out.addEventListener('change', event => {
@@ -409,6 +433,10 @@ $('#attendance-status').addEventListener('change', renderAttendance);
 $$('[data-date-input], [data-time-input]').forEach(input => input.addEventListener('change', () => {
   const form = input.closest('form');
   form.elements.punched_at.value = '';
+  if (form.id === 'punch-in-form' && ['ABSENT', 'LEAVE'].includes(form.elements.status.value)) {
+    form.querySelector('[data-time-status]').textContent = input.value ? `Selected attendance date: ${input.value}` : 'No punch times will be recorded.';
+    return;
+  }
   form.querySelector('[data-time-status]').textContent = 'Selection changed. Press OK to confirm.';
 }));
 $('#load-analytics').addEventListener('click', runAnalytics);

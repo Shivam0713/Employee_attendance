@@ -4,6 +4,7 @@ import unittest
 from copy import deepcopy
 from datetime import date, datetime, time, timedelta, timezone
 from unittest.mock import patch
+from pydantic import ValidationError
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -138,6 +139,21 @@ class AuthTests(unittest.TestCase):
         with self.assertRaises(api.HTTPException) as raised:
             api.punch_in(api.PunchInIn(emp_code="EMP0001", punched_at=int(tomorrow.timestamp() * 1000)), {"role": "admin"})
         self.assertEqual(raised.exception.status_code, 422)
+
+    def test_admin_can_record_absent_or_leave_without_punch_times(self):
+        for status in ("ABSENT", "LEAVE"):
+            result = api.record_non_working_attendance(
+                api.NonWorkingAttendanceIn(emp_code="EMP0001", date=date.today().isoformat(), status=status),
+                {"role": "admin"},
+            )
+            self.assertEqual(result["status"], status)
+            self.assertIsNone(result["punch_in"])
+            self.assertIsNone(result["punch_out"])
+            self.assertEqual(result["history"], [])
+
+    def test_non_working_endpoint_rejects_presence_status(self):
+        with self.assertRaises(ValidationError):
+            api.NonWorkingAttendanceIn(emp_code="EMP0001", date=date.today().isoformat(), status="PRESENT")
 
     def test_admin_can_move_future_record_to_correct_day_with_audit(self):
         tomorrow = date.today() + timedelta(days=1)

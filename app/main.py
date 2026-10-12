@@ -294,6 +294,15 @@ class PunchInIn(StrictModel):
         return v
 
 
+class NonWorkingAttendanceIn(StrictModel):
+    emp_code: str
+    date: str
+    status: Literal["ABSENT", "LEAVE"]
+    @field_validator("date")
+    @classmethod
+    def check_attendance_date(cls, v): return valid_date(v)
+
+
 class PunchOutIn(StrictModel):
     emp_code: str
     punched_at: int | None = Field(default=None, strict=True)
@@ -385,6 +394,20 @@ def punch_in(body: PunchInIn, user=Depends(admin_user)):
            "work_hours": None, "late_minutes": late_minutes(punch, day, emp["shift_start"]), "overtime_minutes": 0, "half_day": False, "history": []}
     try: db.attendance_logs.insert_one(doc)
     except DuplicateKeyError: raise HTTPException(409, "already punched in for this date")
+    return public_record(doc)
+
+
+@app.post("/attendance/non-working", status_code=201)
+def record_non_working_attendance(body: NonWorkingAttendanceIn, user=Depends(admin_user)):
+    """Record an absent/leave day with no punch times; kept separate from punch-in."""
+    emp = db.employees.find_one({"emp_code": body.emp_code})
+    if not emp: raise HTTPException(404, "employee not found")
+    if date.fromisoformat(body.date) > datetime.now(IST).date():
+        raise HTTPException(422, "Attendance cannot be recorded for a future date")
+    doc = {"emp_code": body.emp_code, "date": body.date, "status": body.status, "punch_in": None, "punch_out": None,
+           "work_hours": None, "late_minutes": 0, "overtime_minutes": 0, "half_day": False, "history": []}
+    try: db.attendance_logs.insert_one(doc)
+    except DuplicateKeyError: raise HTTPException(409, "attendance already exists for this date")
     return public_record(doc)
 
 

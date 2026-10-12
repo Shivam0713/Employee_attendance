@@ -83,11 +83,12 @@ At most **one document per (`emp_code`, `date`)**. `emp_code` points at `employe
 | `PRESENT` | Worked on site | `punch_in` required | yes | Punch-in |
 | `WFH` | Worked from home | `punch_in` required | yes | Punch-in |
 | `ON_DUTY` | Official duty away from the office | `punch_in` required | yes | Punch-in |
-| `ABSENT` | Did not work, not on approved leave | both null | no | Seeded back-office data, or a correction |
-| `LEAVE` | On approved leave | both null | no | Seeded back-office data, or a correction |
+| `ABSENT` | Did not work, not on approved leave | both null | no | Seeded back-office data, correction, or this app's admin non-working attendance action |
+| `LEAVE` | On approved leave | both null | no | Seeded back-office data, correction, or this app's admin non-working attendance action |
 
-No endpoint creates `ABSENT` or `LEAVE` records. A weekday with **no document at all** is different from an `ABSENT`
-document; the day has simply not been recorded.
+The assignment's punch-in endpoint accepts only `PRESENT`, `WFH`, or `ON_DUTY`. This app adds the admin-only
+`POST /attendance/non-working` action to record an `ABSENT` or `LEAVE` day without punch times. A weekday with **no
+document at all** is different from an `ABSENT` document; the day has simply not been recorded.
 
 ### Stored derived values are authoritative
 
@@ -120,8 +121,8 @@ are epoch milliseconds. This is easy to forget because the dates sit inside a ne
 
 ## 5. Sample documents
 
-The files in `sample_data/` hold these documents as MongoDB Extended JSON, so you can load them with
-`python sample_seed.py` or `mongoimport --jsonArray` (`_id` is omitted; MongoDB generates it).
+The assignment candidate kit provides these documents in `sample_data/` as MongoDB Extended JSON (`_id` is omitted;
+MongoDB generates it). To comply with the submission requirements, the public repository does not include data dumps.
 
 **They show the shapes only.** The grader's dataset is much larger and contains cases that these nine do not (ties, weekend
 records, employees with no logs at all, people who join mid-month, and more). Passing on this sample proves nothing about

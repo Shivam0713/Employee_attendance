@@ -107,3 +107,5 @@ tbody td{font-size:12px;padding:12px 10px}
 .form-grid label small,.form-hint{font-size:10px}
 .modal-actions .button{font-size:12px}
 .app-footer{font-size:11px}
+.datetime-row input[hidden],.datetime-row button[hidden]{display:none!important}
+.datetime-control.is-non-working .datetime-row{grid-template-columns:minmax(0,1fr)}

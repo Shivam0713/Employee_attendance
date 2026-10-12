@@ -39,8 +39,8 @@ info:
     | `ABSENT` | Did not work, no approved leave | both null | no | seeded data, or a correction |
     | `LEAVE` | On approved leave | both null | no | seeded data, or a correction |
 
-    No endpoint creates `ABSENT` or `LEAVE` records. A weekday with **no record at all** is different from an `ABSENT`
-    record.
+    The contract's punch-in endpoint does not create `ABSENT` or `LEAVE` records. This app adds an administrator-only
+    `POST /attendance/non-working` extension for recording those days without punch times. A weekday with **no record at all** is different from an `ABSENT` record.
 
     ## Who computes what
     | Field | Computed when | From |
@@ -195,6 +195,29 @@ paths:
       responses:
         '200':
           description: Updated record
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AttendanceRecord'}
+        '404': {$ref: '#/components/responses/Error'}
+        '409': {$ref: '#/components/responses/Error'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /attendance/non-working:
+    post:
+      tags: [attendance]
+      operationId: recordNonWorkingAttendance
+      summary: Record an absent or leave day
+      description: |
+        Application extension for administrators. Creates an `ABSENT` or `LEAVE` record for the selected employee and
+        attendance date, with both punch times null. This does not change the contract's punch-in endpoint, which
+        continues to accept only `PRESENT`, `WFH` and `ON_DUTY`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/NonWorkingAttendanceRequest'}
+      responses:
+        '201':
+          description: Created
           content:
             application/json:
               schema: {$ref: '#/components/schemas/AttendanceRecord'}
@@ -518,6 +541,13 @@ components:
           allOf:
             - {$ref: '#/components/schemas/PresenceStatus'}
           default: PRESENT
+    NonWorkingAttendanceRequest:
+      type: object
+      required: [emp_code, date, status]
+      properties:
+        emp_code: {type: string}
+        date: {type: string, format: date}
+        status: {type: string, enum: [ABSENT, LEAVE]}
     PunchOutRequest:
       type: object
       required: [emp_code]
